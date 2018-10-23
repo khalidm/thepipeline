@@ -278,134 +278,132 @@ def make_pipeline(state):
         output='.annotated.vcf')
         .follows('apply_bcf'))
 
-    # Call DELs with DELLY
-    pipeline.transform(
-        task_func=stages.apply_delly_del_call,
-        name='apply_delly_del_call',
-        input=output_from('merge_sample_bams'),
-        filter=formatter('.+/(?P<sample>[a-zA-Z0-9]+).merged.bam'),
-        extras=['{sample[0]}'],
-        output='delly/{sample[0]}/{sample[0]}.delly.DEL.bcf')
-
-    pipeline.merge(
-        task_func=stages.apply_delly_del_merge,
-        name='apply_delly_del_merge',
-        input=output_from('apply_delly_del_call'),
-        # filter=formatter('.+/(?P<sample>[a-zA-Z0-9]+).delly.DEL.bcf'),
-        output='delly/delly.DEL.bcf')
-
-    (pipeline.transform(
-        task_func=stages.apply_delly_del_regen,
-        name='apply_delly_del_regen',
-        input=output_from('merge_sample_bams'),
-        filter=formatter('.+/(?P<sample>[a-zA-Z0-9]+).merged.bam'),
-        extras=['{sample[0]}'],
-        add_inputs=add_inputs(
-            ['delly/delly.DEL.bcf']),
-        output='delly/{sample[0]}/{sample[0]}.delly.DEL2.bcf')
-        .follows('apply_delly_del_merge'))
-
-    pipeline.merge(
-        task_func=stages.apply_delly_del_regen_merge,
-        name='apply_delly_del_regen_merge',
-        input=output_from('apply_delly_del_regen'),
-        # filter=formatter('.+/(?P<sample>[a-zA-Z0-9]+).delly.DEL.bcf'),
-        output='delly/merged.DEL.bcf')
-
-    pipeline.merge(
-        task_func=stages.apply_index_bcf_file,
-        name='apply_index_bcf_file',
-        input=output_from('apply_delly_del_regen_merge'),
-        # filter=formatter('.+/(?P<sample>[a-zA-Z0-9]+).delly.DEL.bcf'),
-        output='delly/merged.DEL.bcf.csi')
-
-    (pipeline.merge(
-        task_func=stages.apply_delly_del_filter,
-        name='apply_delly_del_filter',
-        input=output_from('apply_delly_del_regen_merge'),
-        # filter=formatter('.+/(?P<sample>[a-zA-Z0-9]+).delly.DEL.bcf'),
-        output='delly/germline.DEL.bcf')
-        .follows('apply_index_bcf_file'))
-
-    # Call INVs with DELLY
-    pipeline.transform(
-        task_func=stages.apply_delly_inv_call,
-        name='apply_delly_inv_call',
-        input=output_from('merge_sample_bams'),
-        filter=formatter('.+/(?P<sample>[a-zA-Z0-9]+).merged.bam'),
-        extras=['{sample[0]}'],
-        output='delly/{sample[0]}/{sample[0]}.delly.INV.bcf')
-
-    pipeline.merge(
-        task_func=stages.apply_delly_inv_merge,
-        name='apply_delly_inv_merge',
-        input=output_from('apply_delly_inv_call'),
-        # filter=formatter('.+/(?P<sample>[a-zA-Z0-9]+).delly.DEL.bcf'),
-        output='delly/delly.INV.bcf')
-
-    (pipeline.transform(
-        task_func=stages.apply_delly_inv_regen,
-        name='apply_delly_inv_regen',
-        input=output_from('merge_sample_bams'),
-        filter=formatter('.+/(?P<sample>[a-zA-Z0-9]+).merged.bam'),
-        extras=['{sample[0]}'],
-        add_inputs=add_inputs(
-            ['delly/delly.INV.bcf']),
-        output='delly/{sample[0]}/{sample[0]}.delly.INV2.bcf')
-        .follows('apply_delly_inv_merge'))
-
-    pipeline.merge(
-        task_func=stages.apply_delly_inv_regen_merge,
-        name='apply_delly_inv_regen_merge',
-        input=output_from('apply_delly_inv_regen'),
-        # filter=formatter('.+/(?P<sample>[a-zA-Z0-9]+).delly.DEL.bcf'),
-        output='delly/merged.INV.bcf')
-
-    pipeline.merge(
-        task_func=stages.apply_index_bcf_file2,
-        name='apply_index_bcf_file2',
-        input=output_from('apply_delly_inv_regen_merge'),
-        # filter=formatter('.+/(?P<sample>[a-zA-Z0-9]+).delly.DEL.bcf'),
-        output='delly/merged.INV.bcf.csi')
-
-    (pipeline.merge(
-        task_func=stages.apply_delly_inv_filter,
-        name='apply_delly_inv_filter',
-        input=output_from('apply_delly_inv_regen_merge'),
-        # filter=formatter('.+/(?P<sample>[a-zA-Z0-9]+).delly.DEL.bcf'),
-        output='delly/germline.INV.bcf')
-        .follows('apply_index_bcf_file2'))
-
-    # Call GRIDSS
-    pipeline.transform(
-        task_func=stages.apply_gridss,
-        name='apply_gridss',
-        input=output_from('merge_sample_bams'),
-        filter=formatter('.+/(?P<sample>[a-zA-Z0-9]+).merged.bam'),
-        extras=['{sample[0]}'],
-        output='svariants/{sample[0]}/{sample[0]}.gridss.sv.vcf')
-
-    # # Call DUPs with DELLY
+    # # Call DELs with DELLY
+    # pipeline.transform(
+    #     task_func=stages.apply_delly_del_call,
+    #     name='apply_delly_del_call',
+    #     input=output_from('merge_sample_bams'),
+    #     filter=formatter('.+/(?P<sample>[a-zA-Z0-9]+).merged.bam'),
+    #     extras=['{sample[0]}'],
+    #     output='delly/{sample[0]}/{sample[0]}.delly.DEL.bcf')
+    #
     # pipeline.merge(
-    #     task_func=stages.duplications_delly,
-    #     name='duplications_delly',
-    #     input=output_from('sort_alignment'),
-    #     output='delly.DUP.vcf')
+    #     task_func=stages.apply_delly_del_merge,
+    #     name='apply_delly_del_merge',
+    #     input=output_from('apply_delly_del_call'),
+    #     # filter=formatter('.+/(?P<sample>[a-zA-Z0-9]+).delly.DEL.bcf'),
+    #     output='delly/delly.DEL.bcf')
+    #
+    # (pipeline.transform(
+    #     task_func=stages.apply_delly_del_regen,
+    #     name='apply_delly_del_regen',
+    #     input=output_from('merge_sample_bams'),
+    #     filter=formatter('.+/(?P<sample>[a-zA-Z0-9]+).merged.bam'),
+    #     extras=['{sample[0]}'],
+    #     add_inputs=add_inputs(
+    #         ['delly/delly.DEL.bcf']),
+    #     output='delly/{sample[0]}/{sample[0]}.delly.DEL2.bcf')
+    #     .follows('apply_delly_del_merge'))
+    #
+    # pipeline.merge(
+    #     task_func=stages.apply_delly_del_regen_merge,
+    #     name='apply_delly_del_regen_merge',
+    #     input=output_from('apply_delly_del_regen'),
+    #     # filter=formatter('.+/(?P<sample>[a-zA-Z0-9]+).delly.DEL.bcf'),
+    #     output='delly/merged.DEL.bcf')
+    #
+    # pipeline.merge(
+    #     task_func=stages.apply_index_bcf_file,
+    #     name='apply_index_bcf_file',
+    #     input=output_from('apply_delly_del_regen_merge'),
+    #     # filter=formatter('.+/(?P<sample>[a-zA-Z0-9]+).delly.DEL.bcf'),
+    #     output='delly/merged.DEL.bcf.csi')
+    #
+    # (pipeline.merge(
+    #     task_func=stages.apply_delly_del_filter,
+    #     name='apply_delly_del_filter',
+    #     input=output_from('apply_delly_del_regen_merge'),
+    #     # filter=formatter('.+/(?P<sample>[a-zA-Z0-9]+).delly.DEL.bcf'),
+    #     output='delly/germline.DEL.bcf')
+    #     .follows('apply_index_bcf_file'))
     #
     # # Call INVs with DELLY
-    # pipeline.merge(
-    #     task_func=stages.inversions_delly,
-    #     name='inversions_delly',
-    #     input=output_from('sort_alignment'),
-    #     output='delly.INV.vcf')
+    # pipeline.transform(
+    #     task_func=stages.apply_delly_inv_call,
+    #     name='apply_delly_inv_call',
+    #     input=output_from('merge_sample_bams'),
+    #     filter=formatter('.+/(?P<sample>[a-zA-Z0-9]+).merged.bam'),
+    #     extras=['{sample[0]}'],
+    #     output='delly/{sample[0]}/{sample[0]}.delly.INV.bcf')
     #
-    # # Call TRAs with DELLY
     # pipeline.merge(
-    #     task_func=stages.translocations_delly,
-    #     name='translocations_delly',
-    #     input=output_from('sort_alignment'),
-    #     output='delly.TRA.vcf')
-
-
+    #     task_func=stages.apply_delly_inv_merge,
+    #     name='apply_delly_inv_merge',
+    #     input=output_from('apply_delly_inv_call'),
+    #     # filter=formatter('.+/(?P<sample>[a-zA-Z0-9]+).delly.DEL.bcf'),
+    #     output='delly/delly.INV.bcf')
+    #
+    # (pipeline.transform(
+    #     task_func=stages.apply_delly_inv_regen,
+    #     name='apply_delly_inv_regen',
+    #     input=output_from('merge_sample_bams'),
+    #     filter=formatter('.+/(?P<sample>[a-zA-Z0-9]+).merged.bam'),
+    #     extras=['{sample[0]}'],
+    #     add_inputs=add_inputs(
+    #         ['delly/delly.INV.bcf']),
+    #     output='delly/{sample[0]}/{sample[0]}.delly.INV2.bcf')
+    #     .follows('apply_delly_inv_merge'))
+    #
+    # pipeline.merge(
+    #     task_func=stages.apply_delly_inv_regen_merge,
+    #     name='apply_delly_inv_regen_merge',
+    #     input=output_from('apply_delly_inv_regen'),
+    #     # filter=formatter('.+/(?P<sample>[a-zA-Z0-9]+).delly.DEL.bcf'),
+    #     output='delly/merged.INV.bcf')
+    #
+    # pipeline.merge(
+    #     task_func=stages.apply_index_bcf_file2,
+    #     name='apply_index_bcf_file2',
+    #     input=output_from('apply_delly_inv_regen_merge'),
+    #     # filter=formatter('.+/(?P<sample>[a-zA-Z0-9]+).delly.DEL.bcf'),
+    #     output='delly/merged.INV.bcf.csi')
+    #
+    # (pipeline.merge(
+    #     task_func=stages.apply_delly_inv_filter,
+    #     name='apply_delly_inv_filter',
+    #     input=output_from('apply_delly_inv_regen_merge'),
+    #     # filter=formatter('.+/(?P<sample>[a-zA-Z0-9]+).delly.DEL.bcf'),
+    #     output='delly/germline.INV.bcf')
+    #     .follows('apply_index_bcf_file2'))
+    #
+    # # Call GRIDSS
+    # pipeline.transform(
+    #     task_func=stages.apply_gridss,
+    #     name='apply_gridss',
+    #     input=output_from('merge_sample_bams'),
+    #     filter=formatter('.+/(?P<sample>[a-zA-Z0-9]+).merged.bam'),
+    #     extras=['{sample[0]}'],
+    #     output='svariants/{sample[0]}/{sample[0]}.gridss.sv.vcf')
+    #
+    # # # Call DUPs with DELLY
+    # # pipeline.merge(
+    # #     task_func=stages.duplications_delly,
+    # #     name='duplications_delly',
+    # #     input=output_from('sort_alignment'),
+    # #     output='delly.DUP.vcf')
+    # #
+    # # # Call INVs with DELLY
+    # # pipeline.merge(
+    # #     task_func=stages.inversions_delly,
+    # #     name='inversions_delly',
+    # #     input=output_from('sort_alignment'),
+    # #     output='delly.INV.vcf')
+    # #
+    # # # Call TRAs with DELLY
+    # # pipeline.merge(
+    # #     task_func=stages.translocations_delly,
+    # #     name='translocations_delly',
+    # #     input=output_from('sort_alignment'),
+    # #     output='delly.TRA.vcf')
 
     return pipeline
