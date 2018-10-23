@@ -385,11 +385,14 @@ class Stages(object):
         '''Apply VEP'''
         vcf_in = inputs
         cores = self.get_stage_options('apply_vep', 'cores')
-        vep_command = "{vep_path}/variant_effect_predictor.pl --cache --refseq --offline {other_vep} --fasta {reference} " \
+        vep_command = "{vep_path} --cache --refseq --offline {other_vep} --fasta {reference} " \
                     "-i {vcf_in} --sift b --polyphen b --symbol --numbers --biotype --total_length --hgvs " \
-                    "--format vcf -o {vcf_vep} --force_overwrite --vcf " \
-                    "--fields Consequence,Codons,Amino_acids,Gene,SYMBOL,Feature,EXON,PolyPhen,SIFT," \
-                    "Protein_position,BIOTYPE,HGVSc,HGVSp,cDNA_position,CDS_position,HGVSc,HGVSp,cDNA_position,CDS_position " \
+                    "--format vcf -o {vcf_vep} --force_overwrite --vcf --exclude_predicted --af_gnomad " \
+                    "--fields Consequence,IMPACT,Codons,Amino_acids,Gene,SYMBOL,Feature,EXON,PolyPhen,SIFT,Protein_position,BIOTYPE,HGVSc,HGVSp,cDNA_position,CDS_position," \
+                        "gnomAD_AF,gnomAD_AFR_AF,gnomAD_AMR_AF,gnomAD_ASJ_AF,gnomAD_EAS_AF,gnomAD_FIN_AF,gnomAD_NFE_AF,gnomAD_OTH_AF,gnomAD_SAS_AF,MaxEntScan_alt,MaxEntScan_diff," \
+                        "MaxEntScan_ref,GeneSplicer,PICK" \
+                    "--plugin MaxEntScan,/home/khalidm/cog/programs/vep/ensembl-vep/data/MaxEntScan/ " \
+                    "--plugin GeneSplicer,$GENE_SPLICER_PATH/bin/linux/genesplicer,$GENE_SPLICER_PATH/human,context=100,tmpdir=$TMPDIR " \
                     "--fork {threads}".format(
                     reference=self.reference, vep_path=self.vep_path, vcf_in=vcf_in, vcf_vep=vcf_out, other_vep=self.other_vep, threads=cores)
         run_stage(self.state, 'apply_vep', vep_command)
