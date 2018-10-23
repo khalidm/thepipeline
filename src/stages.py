@@ -94,8 +94,8 @@ class Stages(object):
     def get_options(self, *options):
         return self.state.config.get_options(*options)
 
-    def original_fastqs(self, output):
-        '''Original fastq files'''
+    def original_bams(self, output):
+        '''Original bam files'''
         # print output
         pass
 
