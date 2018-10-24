@@ -235,9 +235,9 @@ class Stages(object):
     def combine_gvcf_gatk(self, vcf_files_in, vcf_out):
         '''Combine G.VCF files for all samples using GATK'''
         g_vcf_files = ' '.join(['--variant ' + vcf for vcf in vcf_files_in])
-        gatk_args = "-T CombineGVCFs -R {reference} " \
+        gatk_args = "-T CombineGVCFs -R {reference} -L {interval_list} " \
                     "--disable_auto_index_creation_and_locking_when_reading_rods " \
-                    "{g_vcf_files} -o {vcf_out}".format(reference=self.reference,
+                    "{g_vcf_files} -o {vcf_out}".format(reference=self.reference, interval_list=self.interval_hg19,
                                                         g_vcf_files=g_vcf_files, vcf_out=vcf_out)
         self.run_gatk('combine_gvcf_gatk', gatk_args)
 
